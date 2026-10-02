@@ -1,39 +1,39 @@
 {
-    "name": "gradient-sweep",
-    "author": "Geoff",
-    "version": "1.0.0",
-    "keywords": [
-        "pebble-watchface"
+  "name": "gradient-time",
+  "author": "NetNoise",
+  "version": "1.0.0",
+  "keywords": [
+    "pebble-watchface"
+  ],
+  "private": true,
+  "dependencies": {
+    "@rebble/clay": "^1.0.8"
+  },
+  "pebble": {
+    "displayName": "Gradient Time",
+    "uuid": "d96cf438-b23c-40b2-a7de-df1bf27905ff",
+    "sdkVersion": "3",
+    "enableMultiJS": true,
+    "targetPlatforms": [
+      "emery"
     ],
-    "private": true,
-    "dependencies": {
-        "@rebble/clay": "^1.0.8"
+    "watchapp": {
+      "watchface": true
     },
-    "pebble": {
-        "displayName": "Gradient Sweep",
-        "uuid": "926863c4-6440-43d5-9724-3e07267b1bf8",
-        "sdkVersion": "3",
-        "enableMultiJS": true,
-        "targetPlatforms": [
-            "emery"
-        ],
-        "watchapp": {
-            "watchface": true
-        },
-        "capabilities": [
-            "configurable"
-        ],
-        "messageKeys": [
-            "HOURCOLOR",
-            "MINCOLOR",
-            "SHAPE",
-            "RING",
-            "MINCIRCLE",
-            "MINRING"
-        ],
-        "resources": {
-            "media": []
-        },
-        "projectType": "native"
-    }
+    "capabilities": [
+      "configurable"
+    ],
+    "messageKeys": [
+      "HOURCOLOR",
+      "MINCOLOR",
+      "SHAPE",
+      "RING",
+      "MINCIRCLE",
+      "MINRING"
+    ],
+    "resources": {
+      "media": []
+    },
+    "projectType": "native"
+  }
 }

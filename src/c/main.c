@@ -1,7 +1,7 @@
 /**
  * Gradient Sweep - analog time shown as two overlapping rotating gradient discs.
  *
- * Each disc is a conic gradient, 50% opaque at its hand and fading to 0% over
+ * Each disc is a conic gradient, 75% opaque at its hand and fading to 0% over
  * 180 degrees: the hour disc clockwise, the minute disc counter-clockwise.
  * The minute disc is layered over the hour disc.
  *
@@ -19,6 +19,10 @@
 
 // The hour container is two thirds of the screen: of the narrowest dimension
 // for a circle (diameter), of each dimension for a rectangle.
+// Opacity of each disc at its hand, out of 255 (75%). The discs are layered, so the
+// combined opacity can approach but never exceed 100%.
+#define DISC_PEAK 191
+
 #define CONTAINER_NUM 2
 #define CONTAINER_DEN 3
 
@@ -116,6 +120,12 @@ static inline uint8_t solid_color(const uint8_t *rgb) {
 // Drawing
 // ----------------------------------------------------------------------------
 
+// Opacity (0..255) of a disc at `dist` trig-angle units from its hand, going the way it fades
+static inline int disc_opacity(int32_t dist) {
+  const int op = DISC_PEAK - (int)((dist * DISC_PEAK) >> 15);  // 0 at 180 degrees
+  return op < 0 ? 0 : op;
+}
+
 static void canvas_update_proc(Layer *layer, GContext *ctx) {
   GRect bounds = layer_get_bounds(layer);
   const int cx = bounds.size.w / 2;
@@ -198,16 +208,14 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
       // The hour wedge never leaves its container; the minute wedge runs on past it
       const int32_t theta = clock_angle(dx, dy);
 
-      // Each disc is a conic gradient: 50% opaque at its hand, fading to 0% over 180 degrees
-      // and staying clear for the rest of the turn. The hour disc fades clockwise, the minute
-      // disc counter-clockwise.
+      // Each disc is a conic gradient: DISC_PEAK opaque at its hand, fading to 0% over 180
+      // degrees and staying clear for the rest of the turn. The hour disc fades clockwise,
+      // the minute disc counter-clockwise.
       int op_h = 0;
       if (inside) {
-        op_h = 127 - (((theta - hour_angle) & (TRIG_MAX_ANGLE - 1)) >> 8);   // 0..127 of 255
-        if (op_h < 0) op_h = 0;
+        op_h = disc_opacity((theta - hour_angle) & (TRIG_MAX_ANGLE - 1));
       }
-      int op_m = 127 - (((min_angle - theta) & (TRIG_MAX_ANGLE - 1)) >> 8);
-      if (op_m < 0) op_m = 0;
+      const int op_m = disc_opacity((min_angle - theta) & (TRIG_MAX_ANGLE - 1));
 
       // Layered like real translucent discs: the hour disc over the white face,
       // then the minute disc over that
