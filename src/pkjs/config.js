@@ -1,5 +1,11 @@
 var COLOR_OPTIONS = [
+  { "label": "Black", "value": "8" },
+  { "label": "Dark Gray", "value": "9" },
   { "label": "Graphite", "value": "0" },
+  { "label": "Navy", "value": "10" },
+  { "label": "Dark Green", "value": "11" },
+  { "label": "Maroon", "value": "12" },
+  { "label": "Dark Purple", "value": "13" },
   { "label": "Silver", "value": "1" },
   { "label": "Gold", "value": "2" },
   { "label": "Rose Gold", "value": "3" },

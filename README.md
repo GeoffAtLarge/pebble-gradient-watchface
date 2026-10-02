@@ -2,10 +2,10 @@
 An analog watchface for the Pebble Time 2 that tells time with two overlapping gradients, inspired by gradient-dial designer watches.
 
 ## Telling time
-- The hour gradient sweeps clockwise from 12 o'clock to the hour hand position, fading light to dark at its leading edge
-- The minute gradient does the same for the minute position, one revolution per hour
-- Where the two overlap, the colors blend
-- The hour gradient always stays inside an inner area two thirds the size of the screen; the minute gradient extends past it to the screen edge
+- Each hand is a translucent disc with a 360-degree conic gradient: 50% opaque at the hand, fading to 0% over half a turn
+- The hour disc fades clockwise from the hour hand; the minute disc fades counter-clockwise from the minute hand and is layered over the hour disc
+- The sharp edges where a disc meets its own hand, and the way the two layers combine, change continuously through the day
+- The hour disc always stays inside an inner area two thirds the size of the screen; the minute disc extends past it to the screen edge
 
 ## Settings
 - Hour and minute colors

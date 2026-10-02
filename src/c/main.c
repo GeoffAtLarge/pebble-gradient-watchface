@@ -1,9 +1,9 @@
 /**
- * Gradient Sweep — analog time shown as two overlapping gradient wedges.
+ * Gradient Sweep - analog time shown as two overlapping rotating gradient discs.
  *
- * The hour wedge sweeps clockwise from 12 o'clock to the hour hand angle,
- * the minute wedge from 12 o'clock to the minute angle. Each fades from light
- * (at 12) to dark (at its leading edge); where they overlap the tones combine.
+ * Each disc is a conic gradient, 50% opaque at its hand and fading to 0% over
+ * 180 degrees: the hour disc clockwise, the minute disc counter-clockwise.
+ * The minute disc is layered over the hour disc.
  *
  * Rendered per pixel into the framebuffer with ordered dithering, so the
  * 4-levels-per-channel Pebble palette still yields smooth gradients.
@@ -22,9 +22,6 @@
 #define CONTAINER_NUM 2
 #define CONTAINER_DEN 3
 
-#define HOUR_MAX_DARK 170     // darkness (0-255) at the leading edge of each wedge
-#define MIN_MAX_DARK 255
-#define WEDGE_MIN_DARK 25     // darkness at 12 o'clock end of a wedge
 
 typedef struct {
   uint8_t hour_color;   // index into COLORS
@@ -45,11 +42,17 @@ static const uint8_t COLORS[][3] = {
   {30, 150, 70},    // Green
   {200, 30, 30},    // Red
   {130, 50, 170},   // Purple
+  {0, 0, 0},        // Black
+  {85, 85, 85},     // Dark Gray
+  {0, 0, 85},       // Navy
+  {0, 85, 0},       // Dark Green
+  {85, 0, 0},       // Maroon
+  {85, 0, 85},      // Dark Purple
 };
 #define NUM_COLORS ((int)(sizeof(COLORS) / sizeof(COLORS[0])))
 
 #define DEFAULT_HOUR_COLOR 1
-#define DEFAULT_MIN_COLOR 0
+#define DEFAULT_MIN_COLOR 8
 
 static Window *s_window;
 static Layer *s_canvas_layer;
@@ -129,9 +132,6 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
 
   const int32_t min_angle = (t->tm_min * TRIG_MAX_ANGLE) / 60;
   const int32_t hour_angle = (((t->tm_hour % 12) * 60 + t->tm_min) * TRIG_MAX_ANGLE) / 720;
-  // Q16 reciprocals so the per-pixel fade needs no division
-  const int32_t min_inv = min_angle ? (1 << 16) / min_angle : 0;
-  const int32_t hour_inv = hour_angle ? (1 << 16) / hour_angle : 0;
 
   const uint8_t *hc = COLORS[s_settings.hour_color < NUM_COLORS ? s_settings.hour_color : DEFAULT_HOUR_COLOR];
   const uint8_t *mc = COLORS[s_settings.min_color < NUM_COLORS ? s_settings.min_color : DEFAULT_MIN_COLOR];
@@ -198,27 +198,25 @@ static void canvas_update_proc(Layer *layer, GContext *ctx) {
       // The hour wedge never leaves its container; the minute wedge runs on past it
       const int32_t theta = clock_angle(dx, dy);
 
-      int dark_h = 0;
-      int dark_m = 0;
-      if (inside && theta < hour_angle) {
-        dark_h = WEDGE_MIN_DARK + (((HOUR_MAX_DARK - WEDGE_MIN_DARK) * ((theta * hour_inv) >> 8)) >> 8);
+      // Each disc is a conic gradient: 50% opaque at its hand, fading to 0% over 180 degrees
+      // and staying clear for the rest of the turn. The hour disc fades clockwise, the minute
+      // disc counter-clockwise.
+      int op_h = 0;
+      if (inside) {
+        op_h = 127 - (((theta - hour_angle) & (TRIG_MAX_ANGLE - 1)) >> 8);   // 0..127 of 255
+        if (op_h < 0) op_h = 0;
       }
-      if (theta < min_angle) {
-        dark_m = WEDGE_MIN_DARK + (((MIN_MAX_DARK - WEDGE_MIN_DARK) * ((theta * min_inv) >> 8)) >> 8);
-      }
+      int op_m = 127 - (((min_angle - theta) & (TRIG_MAX_ANGLE - 1)) >> 8);
+      if (op_m < 0) op_m = 0;
 
-      if (dark_h == 0 && dark_m == 0) {
-        row.data[x] = face_px;
-        continue;
-      }
-
-      // Each wedge tints the white face toward its colour; overlaps multiply
+      // Layered like real translucent discs: the hour disc over the white face,
+      // then the minute disc over that
       const int thr = bayer8(x, y);
       uint8_t lv[3];
       for (int i = 0; i < 3; i++) {
-        int th = 255 + ((hc[i] - 255) * dark_h) / 255;
-        int tm = 255 + ((mc[i] - 255) * dark_m) / 255;
-        lv[i] = dither_level((th * tm) / 255, thr);
+        int tone = 255 + ((hc[i] - 255) * op_h) / 255;
+        tone += ((mc[i] - tone) * op_m) / 255;
+        lv[i] = dither_level(tone, thr);
       }
       row.data[x] = 0xC0 | (lv[0] << 4) | (lv[1] << 2) | lv[2];
     }
