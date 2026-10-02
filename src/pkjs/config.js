@@ -1,18 +1,7 @@
-var COLOR_OPTIONS = [
-  { "label": "Black", "value": "8" },
-  { "label": "Dark Gray", "value": "9" },
-  { "label": "Graphite", "value": "0" },
-  { "label": "Navy", "value": "10" },
-  { "label": "Dark Green", "value": "11" },
-  { "label": "Maroon", "value": "12" },
-  { "label": "Dark Purple", "value": "13" },
-  { "label": "Silver", "value": "1" },
-  { "label": "Gold", "value": "2" },
-  { "label": "Rose Gold", "value": "3" },
-  { "label": "Blue", "value": "4" },
-  { "label": "Green", "value": "5" },
-  { "label": "Red", "value": "6" },
-  { "label": "Purple", "value": "7" }
+// Swatch grid for the color pickers (hex, no #)
+var COLOR_LAYOUT = [
+  ["000000", "555555", "282830", "000055", "005500", "550000", "550055"],
+  ["828791", "BE7D0A", "C86464", "1E5AC8", "1E9646", "C81E1E", "8232AA"]
 ];
 
 module.exports = [
@@ -22,18 +11,31 @@ module.exports = [
     "items": [
       { "type": "heading", "defaultValue": "Colors" },
       {
-        "type": "select",
+        "type": "color",
         "messageKey": "HOURCOLOR",
         "label": "Hour color",
-        "defaultValue": "1",
-        "options": COLOR_OPTIONS
+        "defaultValue": "828791",
+        "sunlight": false,
+        "layout": COLOR_LAYOUT
+      },
+      {
+        "type": "color",
+        "messageKey": "MINCOLOR",
+        "label": "Minute color",
+        "defaultValue": "000000",
+        "sunlight": false,
+        "layout": COLOR_LAYOUT
       },
       {
         "type": "select",
-        "messageKey": "MINCOLOR",
-        "label": "Minute color",
+        "messageKey": "RAMP",
+        "label": "Gradient",
+        "description": "Logarithmic keeps the discs dark longer before fading out.",
         "defaultValue": "0",
-        "options": COLOR_OPTIONS
+        "options": [
+          { "label": "Logarithmic", "value": "0" },
+          { "label": "Linear", "value": "1" }
+        ]
       }
     ]
   },

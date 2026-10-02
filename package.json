@@ -29,7 +29,8 @@
       "SHAPE",
       "RING",
       "MINCIRCLE",
-      "MINRING"
+      "MINRING",
+      "RAMP"
     ],
     "resources": {
       "media": []
