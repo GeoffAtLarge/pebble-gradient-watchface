@@ -12,6 +12,10 @@
 
 #include <pebble.h>
 
+#if !defined(PBL_COLOR)
+#error "Gradient Sweep draws into an 8-bit color framebuffer; black-and-white platforms (aplite, diorite, flint) are not supported"
+#endif
+
 #define SETTINGS_KEY 2
 
 #define SHAPE_CIRCLE 0        // hour wedge is contained by a circle
